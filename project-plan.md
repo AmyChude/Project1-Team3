@@ -38,10 +38,20 @@ Here is a sample solution architecture diagram:
 ![images/sample-solution-architecture-diagram.png](images/sample-solution-architecture-diagram.png)
 
 ## Breakdown of tasks 
-How is your project broken down? Who is doing what?
 
-We recommend using a free Task board such as [Trello](https://trello.com/). This makes it easy to assign and track tasks to each individual. 
+### Extract and Load pipeline ~ Akos, Rihab
+- Incremental extract/load
+### Transform pipeline ~ Uzo
+- Filtering, grouping, joins/merges
+### Unit Tests ~ Rihab 
+- Creating unit tests to cover the ETL Process
 
-Example: 
+### stitching the ELT pipeline together, adding logging and creating the Dockerfile for the docker image ~ Uzo, Rihab
+-  Metadata logs.
+-  Build Docker image.
+-  Deploy Docker container
+### creating the required AWS services (e.g. RDS, ECR, S3, ECS) ~ Akos, Uzo
 
-![images/kanban-task-board.png](images/kanban-task-board.png)
+### Documentation and preparing slides for the presentation ~ Uzo, Rihab, Akos
+
+### Deploying the solution to AWS ~ Rihab
