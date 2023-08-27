@@ -1,7 +1,7 @@
 # Project plan 
 
 ## Objective 
-The objective of our project is to track, aggregate and provide analytical datasets from data engineer jobs fetched from one (or more) job board APIs and currency exchange rates API.
+Our project aims to track, aggregate and provide analytical datasets from data engineer jobs fetched from one (or more) job board APIs and currency exchange rates APIs.
 
 ## Consumers 
 The users of our datasets are job seekers, recruiters and hiring managers.
@@ -24,7 +24,7 @@ The users of our datasets are job seekers, recruiters and hiring managers.
 
 
 
-## Solution architecture
+## Solution Architecture
 How are we going to get data flowing from source to serving? What components and services will we combine to implement the solution? How do we automate the entire running of the solution? 
 
 - What data extraction patterns are you going to be using? 
@@ -46,11 +46,11 @@ Here is a sample solution architecture diagram:
 ### Unit Tests ~ Rihab 
 - Creating unit tests to cover the ETL Process
 
-### stitching the ELT pipeline together, adding logging and creating the Dockerfile for the docker image ~ Uzo, Rihab
+### Stitching the ELT pipeline together, adding logging and creating the Dockerfile for the docker image ~ Uzo, Rihab
 -  Metadata logs.
--  Build Docker image.
+-  Build a Docker image.
 -  Deploy Docker container
-### creating the required AWS services (e.g. RDS, ECR, S3, ECS) ~ Akos, Uzo
+### Creating the required AWS services (e.g. RDS, ECR, S3, ECS) ~ Akos, Uzo
 
 ### Documentation and preparing slides for the presentation ~ Uzo, Rihab, Akos
 
