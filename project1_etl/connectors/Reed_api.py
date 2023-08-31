@@ -1,15 +1,23 @@
-from typing import List,Dict
+from typing import Optional
 import requests
 from dotenv import load_dotenv
 import os
-print("__file__ value:", __file__)
+import json
+import os
+import logging
+from pathlib import Path
+
 class Reed:
-    def __init__(self, api_key_id: str,api_secret_key: str):
+    def __init__(self, api_key_id: str,api_secret_key: str, cache_dir: Optional[Path] = None):
         self.user = api_key_id
         self.password = api_secret_key
         self.base_url = "https://www.reed.co.uk/api/1.0/search/"
-        pass
-    def get_jobs(self) -> List[dict]:
+        self.cache_dir = cache_dir
+        if self.cache_dir is not None and not isinstance(self.cache_dir, Path):
+            self.cache_dir = Path(self.cache_dir)
+        self.cache_file = Path("reed_latest.json")
+
+    def get_jobs(self) -> list[dict]:
         """
         Get the job related to data from reed. 
 
@@ -23,6 +31,14 @@ class Reed:
         Raises:
             Exception if response code is not 200. 
         """
+        cache_path = None
+        if self.cache_dir is not None:
+            logging.info(f"Using cache directory {self.cache_dir}")
+            cache_path = self.cache_dir / self.cache_file
+            if cache_path.exists():
+                logging.info(f"Using cache file {cache_path}")
+                with open(cache_path, "r") as f:
+                    return json.load(f)
         all_results = []
         url = self.base_url
         resultsToSkip = 0
@@ -43,7 +59,11 @@ class Reed:
                 data_available = False
             else: 
                 raise Exception(f"Failed to extract data from Reed API. Status Code: {response.status_code}. Response: {response.text}")
-            
+        if cache_path is not None:
+                logging.info(f"Saving cache file {cache_path}")
+                os.makedirs(self.cache_dir, exist_ok=True)
+                with open(cache_path, "w") as f:
+                    json.dump(all_results, f)    
         return all_results
         
 if __name__=='__main__':
