@@ -1,14 +1,13 @@
 import pandas as pd
 import os
 import sys
-from connectors.Reed_api import Reed
+from project1_etl.connectors.Reed_api import Reed
  
 from dotenv import load_dotenv
 
 def extract(reed : Reed) -> pd.DataFrame:
     data = reed.get_jobs()
     df = pd.json_normalize(data=data)
-    #df.to_csv("data.csv") # just added this to do transformation utilising csv instead of calling extract function  in order avoid getting max retries when calling API too many time
     return df
 
 def transform(df:pd.DataFrame) ->pd.DataFrame:
@@ -26,7 +25,6 @@ def transform(df:pd.DataFrame) ->pd.DataFrame:
         a dataframe with clean data
  
     """
-    df = pd.read_csv("data.csv")
     df.drop_duplicates(inplace=True) 
     if df.isna().any().any():
         df.dropna(subset=['locationName', 'minimumSalary','jobTitle'],inplace=True)
