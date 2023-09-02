@@ -2,6 +2,7 @@ from sqlalchemy import create_engine, Table, MetaData, Column, Integer, String, 
 from sqlalchemy.engine import URL
 import pandas as pd
 import logging
+from tqdm import tqdm
 
 class PostgreSqlClient:
     def __init__(self, 
@@ -56,12 +57,30 @@ class PostgreSqlClient:
     def insert_data(self, table_name: str, data: list[dict]) -> int:
         """
         Insert data into a table. 
-        """
+        """                                        
         table = self.metadata.tables[table_name]
         with self.engine.connect() as conn:
-            result = conn.execute(table.insert(), data)
+            result = conn.execute(table.insert().values(data))
             logging.info(f"{result.rowcount} rows inserted into {table_name}")
             return result.rowcount
+
+    def insert_data_in_chunks(self, table_name: str, data: list[dict], chunk_size: int = 1000) -> int:
+        """
+        Insert data into a table in chunks. 
+        """                                        
+        table = self.metadata.tables[table_name]
+        with self.engine.connect() as conn:
+            inserted_rows = 0
+            data_lenght = len(data)
+            logging.info(f"Inserting {data_lenght} rows into {table_name} in chunks of {chunk_size} rows")
+            for chunk_start in tqdm(range(0, len(data), chunk_size)):
+                chunk_end = chunk_start + chunk_size
+                chunk_end = min(chunk_end, data_lenght)
+                chunk = data[chunk_start:chunk_end]
+                result = conn.execute(table.insert().values(chunk))
+                inserted_rows += result.rowcount
+        logging.info(f"{inserted_rows} rows inserted into {table_name}")
+        return inserted_rows
 
     def get_data(self, table_name: str) -> list[dict]:
         """

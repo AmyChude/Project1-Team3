@@ -8,3 +8,4 @@ __pycache__/
 
 # caches
 cache/
+project1_etl/data/postcodes/postcodes_uk.csv
