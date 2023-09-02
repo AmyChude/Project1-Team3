@@ -29,6 +29,11 @@ def transform(df:pd.DataFrame) ->pd.DataFrame:
     if df.isna().any().any():
         df.dropna(subset=['locationName', 'minimumSalary','jobTitle'],inplace=True)
     df = df[(df['jobTitle'].str.contains('data|engineer',regex=True,case=False)) & (df['jobDescription'].str.contains('data|engineer',regex=True,case=False))].reset_index(drop=True)
+
+    # reaname all columns to match the database (lowercase and underscore)
+    for col in df.columns:
+        df.rename(columns={col:col.lower().replace(' ','_')},inplace=True)
+
     return df
 
 if __name__ == '__main__':

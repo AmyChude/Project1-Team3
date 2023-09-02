@@ -10,4 +10,9 @@ def oer_extract(raw_data: dict) -> pd.DataFrame:
     df["base_currency"] = base_currency
     df.reset_index(inplace=True)
     df.rename(columns={"index": "exchange_currency"}, inplace=True)
+
+    # reaname all columns to match the database (lowercase and underscore)
+    for col in df.columns:
+        df.rename(columns={col:col.lower().replace(' ','_')},inplace=True)
+        
     return df
