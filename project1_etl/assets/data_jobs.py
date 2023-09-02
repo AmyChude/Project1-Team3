@@ -1,7 +1,8 @@
 import pandas as pd
 import os
-import sys
+from pathlib import Path
 from project1_etl.connectors.Reed_api import Reed
+from zipfile import ZipFile
  
 from dotenv import load_dotenv
 
@@ -30,6 +31,31 @@ def transform(df:pd.DataFrame) ->pd.DataFrame:
         df.dropna(subset=['locationName', 'minimumSalary','jobTitle'],inplace=True)
     df = df[(df['jobTitle'].str.contains('data|engineer',regex=True,case=False)) & (df['jobDescription'].str.contains('data|engineer',regex=True,case=False))].reset_index(drop=True)
 
+    # reaname all columns to match the database (lowercase and underscore)
+    for col in df.columns:
+        df.rename(columns={col:col.lower().replace(' ','_')},inplace=True)
+
+    return df
+
+def extract_postcodes(
+    postcodes_path: Path
+) -> pd.DataFrame:
+    """Extracts data from the postcodes file"""
+    postcodes_csv_path = None
+    # if it is a zip file, unzip it
+    if postcodes_path.suffix == ".zip":
+        with ZipFile(postcodes_path, "r") as zip_ref:
+            zip_ref.extractall(postcodes_path.parent)
+        postcodes_csv_path = postcodes_path.parent / "postcodes_uk.csv"
+    else:
+        postcodes_csv_path = postcodes_path
+    df = pd.read_csv(postcodes_csv_path)
+    return df
+
+def transform_postcodes(
+    df: pd.DataFrame
+) -> pd.DataFrame:
+    """Transforms the postcodes data"""
     # reaname all columns to match the database (lowercase and underscore)
     for col in df.columns:
         df.rename(columns={col:col.lower().replace(' ','_')},inplace=True)
