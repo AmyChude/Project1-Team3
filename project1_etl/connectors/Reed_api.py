@@ -16,6 +16,7 @@ class Reed:
         if self.cache_dir is not None and not isinstance(self.cache_dir, Path):
             self.cache_dir = Path(self.cache_dir)
         self.cache_file = Path("reed_latest.json")
+        self.keywords = 'data' # TODO: read from parameter
 
     def get_jobs(self) -> list[dict]:
         """
@@ -45,7 +46,7 @@ class Reed:
         data_available = True
         while data_available:
             params ={ 
-                'keywords':'data',
+                'keywords': self.keywords,
                 'resultsToTake' :100,
                 'resultsToSkip': resultsToSkip
             }

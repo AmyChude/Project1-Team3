@@ -1,0 +1,10 @@
+name: data_jobs
+config: 
+  postcodes_path: "./project1_etl/data/postcodes/postcodes_uk.zip"
+  log_folder_path: "./project1_etl/logs"
+  cache_folder_path: "./project1_etl/cache"
+  job_keywords: ["data", "analyst"]
+schedule:
+  run_seconds: 3
+  poll_seconds: 1
+  max_runs: 5
