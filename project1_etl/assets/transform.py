@@ -5,7 +5,7 @@ from sqlalchemy import create_engine, Table, MetaData, Column
 from sqlalchemy.dialects import postgresql
 from jinja2 import Environment, FileSystemLoader
 
-def extract(
+def extract_from_staging(
         sql: str, 
         engine: Engine
     ) -> list[dict]:     
@@ -49,7 +49,7 @@ def load(
 if __name__ == "__main__": 
     load_dotenv()
     
-    STAGING_DATABASE_NAME=os.environ.get("STAGING_DATABASE_NAME")
+    STAGING_DATABASE_NAME=os.environ.get("STAGING_DB_NAME")
     STAGING_SERVER_NAME=os.environ.get("STAGING_SERVER_NAME")
     STAGING_DB_USERNAME=os.environ.get("STAGING_DB_USERNAME")
     STAGING_DB_PASSWORD=os.environ.get("STAGING_DB_PASSWORD")
@@ -81,13 +81,13 @@ if __name__ == "__main__":
     )
     target_engine = create_engine(target_connection_url)
     
-    environment = Environment(loader=FileSystemLoader("sql"))
+    environment = Environment(loader=FileSystemLoader("sql")) # ("project1_etl/assets/sql"))
     
     for sql_path in environment.list_templates():
         sql_template = environment.get_template(sql_path)
         table_name = sql_template.make_module().config.get("source_table_name")
         sql = sql_template.render()
-        data = extract(
+        data = extract_from_staging(
             sql=sql,
             engine=source_engine
         )
