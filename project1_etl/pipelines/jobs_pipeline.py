@@ -6,7 +6,8 @@ import time
 from project1_etl.tools.config import get_env_variable, load_pipeline_config
 from project1_etl.tools.schedule import Counter
 from project1_etl.connectors.postgresql import PostgreSqlClient
-from project1_etl.assets.metadata_logging import MetaDataLogger
+from project1_etl.assets.metadata_logger import MetaDataLogger
+from project1_etl.assets.pipeline_logger import PipelineLogger
 
 
 def pipeline_run(pipeline_name: str, postgresql_logging_client: PostgreSqlClient, pipeline_config: dict,
@@ -14,7 +15,7 @@ def pipeline_run(pipeline_name: str, postgresql_logging_client: PostgreSqlClient
     """Run a pipeline and log the results"""
     if run_counter is not None:
         run_counter.increment()
-    # pipeline_logging = PipelineLogging(pipeline_name=pipeline_name, log_folder_path=pipeline_config.get("config").get("log_folder_path"))
+    pipeline_logger = PipelineLogger(pipeline_name=pipeline_name, log_folder_path=pipeline_config.get("config").get("log_folder_path"))
     metadata_logger = MetaDataLogger(
         pipeline_name=pipeline_name, 
         postgresql_client=postgresql_logging_client,
@@ -22,13 +23,14 @@ def pipeline_run(pipeline_name: str, postgresql_logging_client: PostgreSqlClient
     )
     try: 
         metadata_logger.log_start() # log start
+        pipeline_logger.logger.info(f"Pipeline run started")
         # pipeline(config=pipeline_config.get("config"), pipeline_logging=pipeline_logging)
-        metadata_logger.log_success(logs="success") #pipeline_logging.get_logs()) # log end
-        # pipeline_logging.logger.handlers.clear()
+        metadata_logger.log_success(logs=pipeline_logger.get_logs()) # log end
+        pipeline_logger.clear()
     except BaseException as e:
-        # pipeline_logging.logger.error(f"Pipeline run failed. See detailed logs: {e}")
-        metadata_logger.log_failure(logs="fail") # pipeline_logging.get_logs()) # log error
-        # pipeline_logging.logger.handlers.clear()
+        pipeline_logger.logger.error(f"Pipeline run failed. See detailed logs: {e}")
+        metadata_logger.log_failure(logs= pipeline_logger.get_logs()) # log error
+        pipeline_logger.clear()
 
 
 if __name__ == "__main__":
