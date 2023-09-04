@@ -12,6 +12,7 @@ from project1_etl.connectors.postgresql import (
 )
 from project1_etl.connectors.Reed_api import Reed
 
+
 logging.basicConfig(level=logging.INFO)
 
 if __name__ == "__main__":
@@ -27,11 +28,11 @@ if __name__ == "__main__":
     DB_HOST = os.getenv("STAGING_SERVER_NAME")
     DB_PORT = os.getenv("STAGING_DB_PORT")
     DB_NAME = os.getenv("STAGING_DB_NAME")
-
+    
     JOBS_TABLE_NAME = "jobs"
     EXCHANGE_RATES_TABLE_NAME = "exchange_rates"
     POSTCODES_TABLE_NAME = "postcodes"
-
+    
     sql_client = PostgreSqlClient(
         server_name=DB_HOST,
         database_name=DB_NAME,
@@ -39,7 +40,7 @@ if __name__ == "__main__":
         password=DB_PASSWORD,
         port=DB_PORT,
     )
-
+    
     logging.info("ETL job started")
 
     logging.info("Extracting data from Open Exchange Rates API")
@@ -51,14 +52,17 @@ if __name__ == "__main__":
     sql_client.create_table_add_pk(
         table_name=EXCHANGE_RATES_TABLE_NAME, columns=oer_columns, drop_if_exists=True
     )
+   
 
     sql_client.insert_data(
         table_name=EXCHANGE_RATES_TABLE_NAME,
         data=rates_df.to_dict(orient="records")
     )
+    
 
     logging.info("Extracting data from Reed API")
     reed_client = Reed(api_key_id=reed_api_key, api_secret_key=reed_api_secret, cache_dir="project1_etl/cache")
+    
     jobs_df = extract(reed_client)
     jobs_df = transform(jobs_df)
     
@@ -66,11 +70,12 @@ if __name__ == "__main__":
     sql_client.create_table_add_pk(
         table_name=JOBS_TABLE_NAME, columns=reed_columns, drop_if_exists=True
     )
+    
     sql_client.insert_data(
         table_name=JOBS_TABLE_NAME,
         data=jobs_df.to_dict(orient="records")
     )
-
+    
     logging.info("Extracting data from postcodes file")
     postcodes_path = Path("project1_etl/data/postcodes/postcodes_uk.zip") # TODO read from config file
     postcodes_df = extract_postcodes(postcodes_path)
@@ -79,6 +84,7 @@ if __name__ == "__main__":
     sql_client.create_table_add_pk(
         table_name=POSTCODES_TABLE_NAME, columns=postcodes_columns, drop_if_exists=True
     )
+    
     sql_client.insert_data_in_chunks(
         table_name=POSTCODES_TABLE_NAME,
         data=postcodes_df.to_dict(orient="records")
