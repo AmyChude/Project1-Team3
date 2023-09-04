@@ -31,6 +31,14 @@ class PostgreSqlClient:
         self.metadata = MetaData(bind=self.engine)
         self.metadata.reflect() # get target table schemas into metadata object 
 
+    def execute(self, object_, *multiparams, **params):
+        self.engine.execute(object_, *multiparams, **params)
+
+    def get_table(self, table_name: str) -> Table:
+        if not self.engine.has_table(table_name):
+            raise Exception(f"Table {table_name} does not exist")
+        return self.metadata.tables[table_name]
+
     def drop_table(self, table_name: str):
         if self.engine.has_table(table_name):
             self.metadata.tables[table_name].drop(self.engine)
@@ -38,6 +46,23 @@ class PostgreSqlClient:
             logging.info(f"Table {table_name} dropped")
         else:
             logging.info(f"Table {table_name} does not exist")
+
+
+    def create_table(self, table_name: str, columns: list[Column], drop_if_exists: bool = False):
+        """
+        Create a table in the database. 
+        """
+        if drop_if_exists:
+            self.drop_table(table_name)
+        if self.engine.has_table(table_name):
+            logging.info(f"Table {table_name} already exists")
+        else:
+            table = Table(table_name, self.metadata)
+            for column in columns:
+                table.append_column(column)
+            table.create()
+            logging.info(f"Table {table_name} created")
+
 
     def create_table_add_pk(self, table_name: str, columns: dict, drop_if_exists: bool = False):
         """
@@ -48,11 +73,10 @@ class PostgreSqlClient:
         if self.engine.has_table(table_name):
             logging.info(f"Table {table_name} already exists")
         else:
-            table = Table(table_name, self.metadata, Column('id', Integer, primary_key=True))
+            table_columns = [Column('id', Integer, primary_key=True)]
             for column_name, column_type in columns.items():
-                table.append_column(Column(column_name, column_type))
-            table.create()
-            logging.info(f"Table {table_name} created")
+                table_columns.append(Column(column_name, column_type))
+            self.create_table(table_name, table_columns)
 
     def insert_data(self, table_name: str, data: list[dict]) -> int:
         """
