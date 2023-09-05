@@ -41,6 +41,12 @@ def jobs_pipeline(pipeline_name: str, config: dict, pipeline_logger: PipelineLog
     SERVING_DB_HOST = get_env_variable("SERVING_SERVER_NAME")
     SERVING_DB_PORT = get_env_variable("SERVING_DB_PORT")
     SERVING_DB_NAME = get_env_variable("SERVING_DB_NAME")
+
+    LOAD_POSTCODES = get_env_variable("LOAD_POSTCODES")
+    if LOAD_POSTCODES.lower() == "true":
+        LOAD_POSTCODES = True
+    else:
+        LOAD_POSTCODES = False
     
     pipeline_logger.logger.info("Setting up SQL clients")
     staging_sql_client = PostgreSqlClient(
@@ -95,19 +101,22 @@ def jobs_pipeline(pipeline_name: str, config: dict, pipeline_logger: PipelineLog
         data=jobs_df.to_dict(orient="records")
     )
 
-    pipeline_logger.logger.info("Extracting data from postcodes file")
-    postcodes_path = Path("project1_etl/data/postcodes/postcodes_uk.zip") # TODO read from config file
-    postcodes_df = extract_postcodes(postcodes_path)
-    postcodes_df = transform_postcodes(postcodes_df)
-    postcodes_columns = dataframe_to_column_definitions(postcodes_df)
-    # staging_sql_client.create_table_add_pk(
-    #     table_name=POSTCODES_TABLE_NAME, columns=postcodes_columns, drop_if_exists=True
-    # )
-    
-    # staging_sql_client.insert_data_in_chunks(
-    #     table_name=POSTCODES_TABLE_NAME,
-    #     data=postcodes_df.to_dict(orient="records")
-    # )
+    if LOAD_POSTCODES:
+        pipeline_logger.logger.info("Extracting data from postcodes file")
+        postcodes_path = Path("project1_etl/data/postcodes/postcodes_uk.zip") # TODO read from config file
+        postcodes_df = extract_postcodes(postcodes_path)
+        postcodes_df = transform_postcodes(postcodes_df)
+        postcodes_columns = dataframe_to_column_definitions(postcodes_df)
+        staging_sql_client.create_table_add_pk(
+            table_name=POSTCODES_TABLE_NAME, columns=postcodes_columns, drop_if_exists=True
+        )
+        
+        staging_sql_client.insert_data_in_chunks(
+            table_name=POSTCODES_TABLE_NAME,
+            data=postcodes_df.to_dict(orient="records")
+        )
+    else:
+        pipeline_logger.logger.info("Skipping postcodes data extraction. Enable by setting LOAD_POSTCODES environment variable to 'True'")
 
     pipeline_logger.logger.info("Extracting and loading data to staging database completed")
 
