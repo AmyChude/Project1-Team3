@@ -45,4 +45,4 @@ The users of our datasets are job seekers, recruiters and hiring managers.
 
 ### Documentation and preparing slides for the presentation ~ Uzo, Rihab, Akos
 
-### Deploying the solution to AWS ~ Rihab
+### Deploying the solution to AWS ~ Akos
