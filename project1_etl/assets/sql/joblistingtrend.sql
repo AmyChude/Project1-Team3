@@ -1,10 +1,11 @@
 {% set config = {
     "extract_type": "full",
-    "source_table_name": "jobs"
+    "source_table_name": "jobs",
+    "target_table_name": "joblistingtrend",
 } %}
 
 SELECT
-	TO_CHAR("date"::date, 'YYYY-MM') AS MonthYear,
+	date AS MonthYear,
     "jobtitle",
     COUNT(*) AS MonthlyListingCount,SUM("applications") AS MonthlyApplicationCount
 from 

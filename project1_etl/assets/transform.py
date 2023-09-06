@@ -4,12 +4,16 @@ from sqlalchemy.engine import URL, Engine
 from sqlalchemy import create_engine, Table, MetaData, Column
 from sqlalchemy.dialects import postgresql
 from jinja2 import Environment, FileSystemLoader
+import pandas as pd
 
 def extract_from_staging(
         sql: str, 
         engine: Engine
     ) -> list[dict]:     
     return [dict(row) for row in engine.execute(sql).all()]
+
+def extract_from_staging_df(sql: str, engine: Engine) -> pd.DataFrame:
+    return pd.read_sql(sql=sql, con=engine)
 
 def get_schema_metadata(engine: Engine) -> Table:
     metadata = MetaData(bind=engine)
@@ -81,15 +85,15 @@ if __name__ == "__main__":
     )
     target_engine = create_engine(target_connection_url)
     
-    environment = Environment(loader=FileSystemLoader("sql")) # ("project1_etl/assets/sql"))
+    environment = Environment(loader=FileSystemLoader("sql")) # project1_etl/assets/
     
     for sql_path in environment.list_templates():
         sql_template = environment.get_template(sql_path)
-        table_name = sql_template.make_module().config.get("source_table_name")
+        target_table_name = sql_template.make_module().config.get("target_table_name")
         sql = sql_template.render()
         data = extract_from_staging(
             sql=sql,
             engine=source_engine
         )
-        source_metadata = get_schema_metadata(engine=source_engine)
-        load(data=data, table_name=table_name, engine=target_engine, source_metadata=source_metadata)
+        target_metadata = get_schema_metadata(engine=target_engine)
+        load(data=data, table_name=target_table_name, engine=target_engine, source_metadata=target_metadata)

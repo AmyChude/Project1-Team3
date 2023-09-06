@@ -1,6 +1,7 @@
 {% set config = {
     "extract_type": "full",
-    "source_table_name": "jobs"
+    "source_table_name": "jobs",
+    "target_table_name": "avgsalaries",
 } %}
 
 SELECT
