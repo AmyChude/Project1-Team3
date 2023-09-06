@@ -8,7 +8,7 @@ from project1_etl.tools.config import get_env_variable, load_pipeline_config
 from project1_etl.tools.schedule import Counter
 from project1_etl.assets.extract_load_exchange_rates import oer_extract
 from project1_etl.assets.data_jobs import extract, transform, extract_postcodes, transform_postcodes
-from project1_etl.assets.transform import get_schema_metadata, load, extract_from_staging
+from project1_etl.assets.transform import load, extract_from_staging_df
 from project1_etl.connectors.exchange_api import OpenExchangeRates
 from project1_etl.connectors.postgresql import (
     PostgreSqlClient,
@@ -126,14 +126,17 @@ def jobs_pipeline(pipeline_name: str, config: dict, pipeline_logger: PipelineLog
     for sql_path in environment.list_templates():
         pipeline_logger.logger.info(f"Transforming data for {sql_path}")
         sql_template = environment.get_template(sql_path)
-        table_name = sql_template.make_module().config.get("source_table_name")
+        target_table_name = sql_template.make_module().config.get("target_table_name")
         sql = sql_template.render()
-        # data = extract_from_staging(
-        #     sql=sql,
-        #     engine=staging_sql_client.engine
-        # )
-        # source_metadata = staging_sql_client.metadata # source_metadata = get_schema_metadata(engine=staging_sql_client.engine)
-        # load(data=data, table_name=table_name, engine=serving_sql_client.engine, source_metadata=source_metadata)
+        transformed_df = extract_from_staging_df(
+            sql=sql,
+            engine=staging_sql_client.engine
+        )
+        transform_columns = dataframe_to_column_definitions(transformed_df)
+        serving_sql_client.create_table_add_pk(
+            table_name=target_table_name, columns=transform_columns, drop_if_exists=True)
+        serving_sql_client.insert_data_in_chunks(target_table_name, transformed_df.to_dict(orient="records"))
+
 
     pipeline_logger.logger.info("Transforming data completed")
 
