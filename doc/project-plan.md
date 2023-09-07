@@ -31,10 +31,10 @@ The users of our datasets are job seekers, recruiters and hiring managers.
 ## Breakdown of tasks 
 
 ### Extract and Load pipeline ~ Akos, Rihab
-- Incremental extract/load
+- full extract/load
 ### Transform pipeline ~ Uzo
 - Filtering, grouping, joins/merges
-### Unit Tests ~ Rihab 
+### Unit Tests ~ Akos 
 - Creating unit tests to cover the ETL Process
 
 ### Stitching the ELT pipeline together, adding logging and creating the Dockerfile for the docker image ~ Uzo, Rihab
